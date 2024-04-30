@@ -7,7 +7,7 @@ public class BeanFactory
 {
     private Map<String,Object> beanMap = new HashMap<>();
 
-    private void registerBean(String name, Object bean){
+    public void registerBean(String name, Object bean){
         beanMap.put(name,bean);
 
     }
