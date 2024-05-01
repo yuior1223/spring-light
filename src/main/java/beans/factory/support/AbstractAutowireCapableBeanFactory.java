@@ -3,6 +3,8 @@ package beans.factory.support;
 import beans.BeansException;
 import beans.factory.config.BeanDefinition;
 
+import java.lang.reflect.Constructor;
+
 /**
  *
  * 实现createBean,但未实现getbeanDefinition
@@ -25,10 +27,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         protected Object doCreateBean(String beanName, BeanDefinition beanDefinition) {
-            Class beanClass = beanDefinition.getBeanClass();
+            Class<?> beanClass = beanDefinition.getBeanClass();
             Object bean = null;
             try {
-                bean = beanClass.newInstance();
+                Constructor declaredConstructor = beanClass.getDeclaredConstructor();
+                declaredConstructor.setAccessible(true);
+                bean = declaredConstructor.newInstance();
             } catch (Exception e) {
                 throw new BeansException("Instantiation of bean failed", e);
             }
