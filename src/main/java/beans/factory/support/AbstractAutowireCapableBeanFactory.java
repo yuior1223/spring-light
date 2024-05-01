@@ -13,6 +13,8 @@ import java.lang.reflect.Constructor;
  */
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory {
 
+    private InstantiationStrategy instantiationStrategy = new SimpleInstantiationStrategy();
+
 
     /**
      *
@@ -27,18 +29,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         protected Object doCreateBean(String beanName, BeanDefinition beanDefinition) {
-            Class<?> beanClass = beanDefinition.getBeanClass();
-            Object bean = null;
-            try {
-                Constructor declaredConstructor = beanClass.getDeclaredConstructor();
-                declaredConstructor.setAccessible(true);
-                bean = declaredConstructor.newInstance();
-            } catch (Exception e) {
-                throw new BeansException("Instantiation of bean failed", e);
-            }
+            Object bean = creatBeanInstance(beanDefinition);
 
             addSingleton(beanName, bean);
             return bean;
         }
+    public Object creatBeanInstance(BeanDefinition beanDefinition){
+        return getInstantiationStrategy().instantite(beanDefinition);
+
+        }
+
+
+    public InstantiationStrategy getInstantiationStrategy() {
+        return instantiationStrategy;
     }
+
+    public void setInstantiationStrategy(InstantiationStrategy instantiationStrategy) {
+        this.instantiationStrategy = instantiationStrategy;
+    }
+}
 
