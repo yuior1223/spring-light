@@ -1,7 +1,9 @@
 package beans.factory.support;
 
 import beans.BeansException;
+import beans.factory.PropertyValue;
 import beans.factory.config.BeanDefinition;
+import cn.hutool.core.bean.BeanUtil;
 
 import java.lang.reflect.Constructor;
 
@@ -28,13 +30,45 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             return doCreateBean(beanName, beanDefinition);
         }
 
-        protected Object doCreateBean(String beanName, BeanDefinition beanDefinition) {
-            Object bean = creatBeanInstance(beanDefinition);
+    /**
+     * 实例化bean对象并为其中的属性赋值
+     * @param beanName
+     * @param beanDefinition
+     * @return {@link Object }
+     */
+    protected Object doCreateBean(String beanName, BeanDefinition beanDefinition) {
+
+            Object bean = null;
+            try{
+                bean = createBeanInstance(beanDefinition);
+                applyPropertyValues(beanName, bean, beanDefinition);
+            }
+            catch (Exception e) {
+                throw new BeansException("Instantiation of bean failed", e);
+            }
+
 
             addSingleton(beanName, bean);
             return bean;
         }
-    public Object creatBeanInstance(BeanDefinition beanDefinition){
+
+    /**
+     * 为bean填充属性
+     * @param beanName
+     * @param bean
+     * @param beanDefinition
+     */
+    private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
+        for(PropertyValue propertyValue : beanDefinition.getPropertyValues().getPropertyValues()){
+            String name = propertyValue.getName();
+            Object value = propertyValue.getValue();
+
+            //通过反射设置属性
+            BeanUtil.setFieldValue(bean, name, value);
+        }
+    }
+
+    public Object createBeanInstance(BeanDefinition beanDefinition){
         return getInstantiationStrategy().instantite(beanDefinition);
 
         }
