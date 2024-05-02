@@ -3,6 +3,7 @@ package beans.factory.support;
 import beans.BeansException;
 import beans.factory.PropertyValue;
 import beans.factory.config.BeanDefinition;
+import beans.factory.config.BeanReference;
 import cn.hutool.core.bean.BeanUtil;
 
 import java.lang.reflect.Constructor;
@@ -59,12 +60,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      * @param beanDefinition
      */
     private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
-        for(PropertyValue propertyValue : beanDefinition.getPropertyValues().getPropertyValues()){
-            String name = propertyValue.getName();
-            Object value = propertyValue.getValue();
+        try {
+            for(PropertyValue propertyValue : beanDefinition.getPropertyValues().getPropertyValues()){
+                String name = propertyValue.getName();
+                Object value = propertyValue.getValue();
 
-            //通过反射设置属性
-            BeanUtil.setFieldValue(bean, name, value);
+                if (value instanceof BeanReference) {
+                    // beanA依赖beanB，先实例化beanB
+                    BeanReference beanReference = (BeanReference) value;
+                    value = getBean(beanReference.getBeanName());
+                }
+
+                //通过反射设置属性
+                BeanUtil.setFieldValue(bean, name, value);
+            }
+        }
+        catch (Exception ex){
+        throw new BeansException("Error setting property values for bean: " + beanName, ex);
         }
     }
 
